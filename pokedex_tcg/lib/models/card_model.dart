@@ -20,22 +20,27 @@ class PokemonCard {
   });
 
   factory PokemonCard.fromJson(Map<String, dynamic> json) {
+    // The API returns the card object at the top level of the element
+    // (we pass each element of `data` into this factory). Parse accordingly.
     List<String> attacks = [];
-    if (json['data']?['attacks'] != null) {
-      attacks = (json['data']['attacks'] as List)
-          .map((attack) => attack['name'] as String)
+    if (json['attacks'] != null && json['attacks'] is List) {
+      attacks = (json['attacks'] as List)
+          .map((attack) => (attack['name'] ?? '') as String)
+          .where((s) => s.isNotEmpty)
           .toList();
     }
 
+    final types = (json['types'] as List?)?.cast<String>();
+
     return PokemonCard(
       id: json['id'] ?? '',
-      name: json['data']?['name'] ?? 'Unknown',
-      image: json['data']?['images']?['small'] ?? '',
-      hp: json['data']?['hp'] ?? 'N/A',
-      type: (json['data']?['types'] as List?)?.first ?? 'Unknown',
-      rarity: json['data']?['rarity'] ?? 'N/A',
+      name: json['name'] ?? 'Unknown',
+      image: json['images'] != null ? (json['images']['small'] ?? '') : '',
+      hp: json['hp'] ?? 'N/A',
+      type: (types != null && types.isNotEmpty) ? types.first : 'Unknown',
+      rarity: json['rarity'] ?? 'N/A',
       attacks: attacks,
-      description: json['data']?['flavorText'] ?? '',
+      description: json['flavorText'] ?? '',
     );
   }
 
